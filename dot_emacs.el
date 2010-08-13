@@ -4,14 +4,14 @@
 ;; (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
 (setenv "PATH" (concat (expand-file-name "~/bin") ":"
-		       (expand-file-name "~/apps/scala/bin") ":"
-		       (expand-file-name "~/apps/groovy/bin") ":"
-		       "/usr/local/bin" ":"
-		       "/opt/local/bin" ":"
-		       (getenv "PATH")))
+                       (expand-file-name "~/apps/scala/bin") ":"
+                       (expand-file-name "~/apps/groovy/bin") ":"
+                       "/usr/local/bin" ":"
+                       "/opt/local/bin" ":"
+                       (getenv "PATH")))
 
 ;; basic shit
-(set-default-font "-apple-consolas-medium-r-normal--18-160-*-*-*-*-*-*")
+(set-default-font "-apple-consolas-medium-r-normal--22-160-*-*-*-*-*-*")
 
 ;; No stupid questions
 (defalias 'yes-or-no-p 'y-or-n-p)
@@ -130,8 +130,8 @@
   (setq unit-test-command 'my-js-unit-test-command)
   (setq unit-test-file-fn 'my-js-unit-test-file)
   (add-hook 'before-save-hook 
-	    (lambda ()
-	      (untabify (point-min) (point-max))))
+            (lambda ()
+              (untabify (point-min) (point-max))))
   (add-hook 'after-save-hook 'run-unit-tests t t))
 
 (add-hook 'espresso-mode-hook 'my-js-mode-hook)
@@ -147,13 +147,13 @@
       (save-buffer)
       (compile
        (concat
-	(cond
-	 ((string= "scala" (file-name-extension (buffer-file-name))) "fsc")
-	 ((string= "py" (file-name-extension (buffer-file-name))) "python")
-	 ((string= "groovy" (file-name-extension (buffer-file-name))) "groovy")
-	 ((string= "js" (file-name-extension (buffer-file-name))) "jslint")
-	 (t "echo no compiler for "))
-	" \"" (buffer-file-name) "\"")))))
+        (cond
+         ((string= "scala" (file-name-extension (buffer-file-name))) "fsc")
+         ((string= "py" (file-name-extension (buffer-file-name))) "python")
+         ((string= "groovy" (file-name-extension (buffer-file-name))) "groovy")
+         ((string= "js" (file-name-extension (buffer-file-name))) "jslint")
+         (t "echo no compiler for "))
+        " \"" (buffer-file-name) "\"")))))
 
 ;; Kills live buffers, leaves some emacs work buffers
 ;; optained from http://www.chrislott.org/geek/emacs/dotemacs.html
@@ -165,19 +165,19 @@ LIST defaults to all existing live buffers."
       (setq list (buffer-list)))
   (while list
     (let* ((buffer (car list))
-	   (name (buffer-name buffer)))
+           (name (buffer-name buffer)))
       (and (not (string-equal name ""))
-	   (not (string-equal name "*Messages*"))
-	  ;; (not (string-equal name "*Buffer List*"))
-	   (not (string-equal name "*buffer-selection*"))
-	   (not (string-equal name "*Shell Command Output*"))
-	   (not (string-equal name "*scratch*"))
-	   (/= (aref name 0) ? )
-	   (if (buffer-modified-p buffer)
-	       (if (yes-or-no-p
-		    (format "Buffer %s has been edited. Kill? " name))
-		   (kill-buffer buffer))
-	     (kill-buffer buffer))))
+           (not (string-equal name "*Messages*"))
+          ;; (not (string-equal name "*Buffer List*"))
+           (not (string-equal name "*buffer-selection*"))
+           (not (string-equal name "*Shell Command Output*"))
+           (not (string-equal name "*scratch*"))
+           (/= (aref name 0) ? )
+           (if (buffer-modified-p buffer)
+               (if (yes-or-no-p
+                    (format "Buffer %s has been edited. Kill? " name))
+                   (kill-buffer buffer))
+             (kill-buffer buffer))))
     (setq list (cdr list))))
 
 ;; Kills all them buffers except scratch
@@ -186,7 +186,7 @@ LIST defaults to all existing live buffers."
   "kill all buffers, leaving *scratch* only"
   (interactive)
   (mapcar (lambda (x) (kill-buffer x))
-	  (buffer-list))
+          (buffer-list))
   (delete-other-windows))
 
 
