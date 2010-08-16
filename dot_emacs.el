@@ -109,13 +109,19 @@
 
 (defun my-js-unit-test-command ()
   (interactive)
-  (zerop (shell-command (concat "node " (my-js-unit-test-file buffer-file-name)) "*Messages*" "*Messages*")))
+  (let* ((test-file (my-js-unit-test-file buffer-file-name)))
+    (if test-file
+        (zerop (shell-command (concat "node " )))
+      (progn
+        (message "no unit test for %s" buffer-file-name)
+        nil))))
 
 (defun my-js-unit-test-file (file)
   (interactive "f")
   (if (my-js-is-unit-test-file file)
       file
-    (concat (file-name-sans-extension file) "_test.js")))
+    (let ((test-file (concat (file-name-sans-extension file) "_test.js")))
+      (if (file-exists-p test-file) test-file nil))))
 
 (defun my-js-is-unit-test-file (file)
   (interactive "f")
@@ -129,7 +135,7 @@
   (flymake-mode t)
   (setq unit-test-command 'my-js-unit-test-command)
   (setq unit-test-file-fn 'my-js-unit-test-file)
-  (add-hook 'before-save-hook 
+  (add-hook 'before-save-hook
             (lambda ()
               (untabify (point-min) (point-max))))
   (add-hook 'after-save-hook 'run-unit-tests t t))
@@ -241,6 +247,12 @@ LIST defaults to all existing live buffers."
   (when buffer-file-name (save-buffer)))
 
 
+(defun mongo-shell ()
+  (interactive)
+  (let* ((buffer (get-buffer-create "*mongo*")))
+    (progn
+      (pop-to-buffer buffer)
+      (make-comint-in-buffer "mongo" buffer "/opt/local/bin/mongo" nil "etf"))))
 
 (custom-set-variables
   ;; custom-set-variables was added by Custom.
@@ -295,3 +307,4 @@ LIST defaults to all existing live buffers."
   (package-initialize))
 
 (put 'erase-buffer 'disabled nil)
+
