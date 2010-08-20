@@ -10,6 +10,10 @@
                        "/opt/local/bin" ":"
                        (getenv "PATH")))
 
+(setenv "MANPATH" (concat "/usr/local/man" ":"
+                          "/opt/local/man" ":"
+                          (getenv "MANPATH")))
+
 ;; basic shit
 (set-default-font "-apple-consolas-medium-r-normal--22-160-*-*-*-*-*-*")
 
@@ -111,7 +115,7 @@
   (interactive)
   (let* ((test-file (my-js-unit-test-file buffer-file-name)))
     (if test-file
-        (zerop (shell-command (concat "node " )))
+        (zerop (shell-command (concat "node " test-file) "*unit-test-output*" "*unit-test-output*"))
       (progn
         (message "no unit test for %s" buffer-file-name)
         nil))))
@@ -151,13 +155,13 @@
     (interactive)
     (progn
       (save-buffer)
-      (compile
+      (shell-command
        (concat
         (cond
          ((string= "scala" (file-name-extension (buffer-file-name))) "fsc")
          ((string= "py" (file-name-extension (buffer-file-name))) "python")
          ((string= "groovy" (file-name-extension (buffer-file-name))) "groovy")
-         ((string= "js" (file-name-extension (buffer-file-name))) "jslint")
+         ((string= "js" (file-name-extension (buffer-file-name))) "node")
          (t "echo no compiler for "))
         " \"" (buffer-file-name) "\"")))))
 
@@ -252,7 +256,33 @@ LIST defaults to all existing live buffers."
   (let* ((buffer (get-buffer-create "*mongo*")))
     (progn
       (pop-to-buffer buffer)
-      (make-comint-in-buffer "mongo" buffer "/opt/local/bin/mongo" nil "etf"))))
+      (make-comint-in-buffer "mongo" buffer "/opt/mongodb/bin/mongo" nil "etf"))))
+
+(defun mongo-send-region (start end)
+  "Send a region to the mongo process."
+  (interactive "r")
+  (let ((mongo-buffer (get-buffer "*mongo*")))
+
+    (if (buffer-live-p mongo-buffer)
+        (save-excursion
+          (comint-send-region mongo-buffer start end)
+          (if (string-match "\n$" (buffer-substring start end))
+              ()
+            (comint-send-string sql-buffer "\n"))
+          (message "Sent string to buffer %s." (buffer-name mongo-buffer))
+          (pop-to-buffer mongo-buffer)
+          (display-buffer mongo-buffer))
+      (message "No mongo process started."))))
+
+
+(defun mongo-send-buffer ()
+  "Send the buffer contents to the mongo process."
+  (interactive)
+  (mongo-send-region (point-min) (point-max)))
+
+
+(global-set-key (quote [f7]) (quote mongo-send-buffer))
+(global-set-key (quote [f8]) (quote mongo-send-region))
 
 (custom-set-variables
   ;; custom-set-variables was added by Custom.
