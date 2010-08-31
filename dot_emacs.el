@@ -1,7 +1,6 @@
 (setq load-path (cons "~/emacs" load-path))
 
-;; this conflicts with autosave... need to revisit
-;; (add-hook 'before-save-hook 'delete-trailing-whitespace)
+(add-hook 'before-save-hook 'delete-trailing-whitespace)
 
 (setenv "PATH" (concat (expand-file-name "~/bin") ":"
                        (expand-file-name "~/apps/scala/bin") ":"
@@ -97,15 +96,15 @@
 (add-to-list 'auto-mode-alist '("\\.js$" . espresso-mode))
 (add-to-list 'auto-mode-alist '("\\.json$" . espresso-mode))
 
-(require 'real-auto-save)
-(setq real-auto-save-interval 5) ;; in seconds
+;; (require 'real-auto-save)
+;; (setq real-auto-save-interval 5) ;; in seconds
 
 (require 'flymake-jslint-local)
 
 ;; compilation regexp for jslint
 (setq compilation-error-regexp-alist
-           (cons '("^[ \t]*\\([A-Za-z.0-9_: \\-]+\\)(\\([0-9]+\\)[,]\\( *[0-9]+\\)) JSLINT: \\(.+\\)$" 1 2 3)
-              compilation-error-regexp-alist))
+      (cons '("^[ \t]*\\([A-Za-z.0-9_: \\-]+\\)(\\([0-9]+\\)[,]\\( *[0-9]+\\)) JSLINT: \\(.+\\)$" 1 2 3)
+            compilation-error-regexp-alist))
 
 (require 'unit-test)
 (define-key global-map [f3] 'run-unit-tests)
@@ -131,11 +130,10 @@
   (interactive "f")
   (integerp (string-match ".+_test.js" file)))
 
-
 (defun my-js-mode-hook ()
   ;; espresso mode overrides standard M-., I want it back.
   (define-key espresso-mode-map [(meta ?.)] #'find-tag)
-  (turn-on-real-auto-save)
+  ;; (turn-on-real-auto-save)
   (flymake-mode t)
   (setq unit-test-command 'my-js-unit-test-command)
   (setq unit-test-file-fn 'my-js-unit-test-file)
