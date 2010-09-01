@@ -101,11 +101,6 @@
 
 (require 'flymake-jslint-local)
 
-;; compilation regexp for jslint
-(setq compilation-error-regexp-alist
-      (cons '("^[ \t]*\\([A-Za-z.0-9_: \\-]+\\)(\\([0-9]+\\)[,]\\( *[0-9]+\\)) JSLINT: \\(.+\\)$" 1 2 3)
-            compilation-error-regexp-alist))
-
 (require 'unit-test)
 (define-key global-map [f3] 'run-unit-tests)
 (define-key global-map [f4] 'open-unit-test-file)
@@ -115,6 +110,15 @@
   (let* ((test-file (my-js-unit-test-file buffer-file-name)))
     (if test-file
         (zerop (shell-command (concat "node " test-file) "*unit-test-output*" "*unit-test-output*"))
+      (progn
+        (message "no unit test for %s" buffer-file-name)
+        nil))))
+
+(defun my-js-compile-run-unit-test ()
+  (interactive)
+  (let* ((test-file (my-js-unit-test-file buffer-file-name)))
+    (if test-file
+        (compile (concat "node " test-file))
       (progn
         (message "no unit test for %s" buffer-file-name)
         nil))))
@@ -131,8 +135,16 @@
   (integerp (string-match ".+_test.js" file)))
 
 (defun my-js-mode-hook ()
+  ;; compilation regexp for jslint & node.js
+  (setq compilation-error-regexp-alist
+        '(("^[ \t]*\\([A-Za-z.0-9_: \\-]+\\)(\\([0-9]+\\)[,]\\( *[0-9]+\\)) JSLINT: \\(.+\\)$" 1 2 3)
+          ("^[     ]*.+(\\(.+\\):\\([0-9]+\\):\\([0-9]+\\))$" 1 2 3)))
+
   ;; espresso mode overrides standard M-., I want it back.
   (define-key espresso-mode-map [(meta ?.)] #'find-tag)
+
+  (define-key espresso-mode-map [f2] 'my-js-compile-run-unit-test)
+
   ;; (turn-on-real-auto-save)
   (flymake-mode t)
   (setq unit-test-command 'my-js-unit-test-command)
@@ -153,7 +165,7 @@
     (interactive)
     (progn
       (save-buffer)
-      (shell-command
+      (compile
        (concat
         (cond
          ((string= "scala" (file-name-extension (buffer-file-name))) "fsc")
