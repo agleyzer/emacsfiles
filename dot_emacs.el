@@ -4,21 +4,25 @@
 
 (when (equal system-type 'darwin)
   (setenv "PATH" (concat (expand-file-name "~/bin") ":"
-			 (expand-file-name "~/apps/scala/bin") ":"
-			 (expand-file-name "~/apps/groovy/bin") ":"
-			 "/usr/local/bin" ":"
-			 "/opt/local/bin" ":"
-			 (getenv "PATH")))
+                         (expand-file-name "~/apps/node/bin") ":"
+                         (expand-file-name "~/apps/scala/bin") ":"
+                         (expand-file-name "~/apps/groovy/bin") ":"
+                         "/usr/local/bin" ":"
+                         "/opt/local/bin" ":"
+                         (getenv "PATH")))
 
   (setenv "DYLD_FALLBACK_LIBRARY_PATH" "/usr/lib:/opt/local/lib:/usr/X11R6/lib")
 
   (push "/opt/local/bin" exec-path)
   (push "/usr/local/bin" exec-path)
   (push (expand-file-name "~/bin") exec-path)
+  (push (expand-file-name "~/apps/node/bin") exec-path)
+  (push (expand-file-name "~/apps/scala/bin") exec-path)
+  (push (expand-file-name "~/apps/groovy/bin") exec-path)
 
   (setenv "MANPATH" (concat "/usr/local/man" ":"
-			    "/opt/local/man" ":"
-			    (getenv "MANPATH")))
+                            "/opt/local/man" ":"
+                            (getenv "MANPATH")))
 
   (set-default-font "-apple-consolas-medium-r-normal--22-160-*-*-*-*-*-*"))
 
