@@ -1,20 +1,26 @@
-(setq load-path (cons "~/emacs" load-path))
+(push "~/emacs" load-path)
 
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
-(setenv "PATH" (concat (expand-file-name "~/bin") ":"
-                       (expand-file-name "~/apps/scala/bin") ":"
-                       (expand-file-name "~/apps/groovy/bin") ":"
-                       "/usr/local/bin" ":"
-                       "/opt/local/bin" ":"
-                       (getenv "PATH")))
+(when (equal system-type 'darwin)
+  (setenv "PATH" (concat (expand-file-name "~/bin") ":"
+			 (expand-file-name "~/apps/scala/bin") ":"
+			 (expand-file-name "~/apps/groovy/bin") ":"
+			 "/usr/local/bin" ":"
+			 "/opt/local/bin" ":"
+			 (getenv "PATH")))
 
-(setenv "MANPATH" (concat "/usr/local/man" ":"
-                          "/opt/local/man" ":"
-                          (getenv "MANPATH")))
+  (setenv "DYLD_FALLBACK_LIBRARY_PATH" "/usr/lib:/opt/local/lib:/usr/X11R6/lib")
 
-;; basic shit
-(set-default-font "-apple-consolas-medium-r-normal--22-160-*-*-*-*-*-*")
+  (push "/opt/local/bin" exec-path)
+  (push "/usr/local/bin" exec-path)
+  (push (expand-file-name "~/bin") exec-path)
+
+  (setenv "MANPATH" (concat "/usr/local/man" ":"
+			    "/opt/local/man" ":"
+			    (getenv "MANPATH")))
+
+  (set-default-font "-apple-consolas-medium-r-normal--22-160-*-*-*-*-*-*"))
 
 ;; No stupid questions
 (defalias 'yes-or-no-p 'y-or-n-p)
@@ -24,8 +30,7 @@
   (delete-other-windows)
   (split-window)
   (other-window 1)
-  (shell)
-)
+  (shell))
 
 ;; Set some keys - that's the way I like it :)
 (global-set-key "\M-s" (quote my-shell))
