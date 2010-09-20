@@ -101,12 +101,17 @@
 ;;(add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
 ;;(add-to-list 'auto-mode-alist '("\\.json$" . js2-mode))
 
-(autoload #'espresso-mode "espresso" "Start espresso-mode" t)
-(add-to-list 'auto-mode-alist '("\\.js$" . espresso-mode))
-(add-to-list 'auto-mode-alist '("\\.json$" . espresso-mode))
+
+(require 'markdown-mode)
+
+(setq auto-mode-alist
+   (cons '("\\.md" . markdown-mode) auto-mode-alist))
 
 ;; (require 'real-auto-save)
 ;; (setq real-auto-save-interval 5) ;; in seconds
+
+(add-to-list 'auto-mode-alist '("\\.js$" . js-mode))
+(add-to-list 'auto-mode-alist '("\\.json$" . js-mode))
 
 (require 'flymake-jslint-local)
 
@@ -150,9 +155,9 @@
           ("^[     ]*.+(\\(.+\\):\\([0-9]+\\):\\([0-9]+\\))$" 1 2 3)))
 
   ;; espresso mode overrides standard M-., I want it back.
-  (define-key espresso-mode-map [(meta ?.)] #'find-tag)
+  (define-key js-mode-map [(meta ?.)] #'find-tag)
 
-  (define-key espresso-mode-map [f2] 'my-js-compile-run-unit-test)
+  (define-key js-mode-map [f2] 'my-js-compile-run-unit-test)
 
   ;; (turn-on-real-auto-save)
   (flymake-mode t)
@@ -163,7 +168,7 @@
               (untabify (point-min) (point-max))))
   (add-hook 'after-save-hook 'run-unit-tests t t))
 
-(add-hook 'espresso-mode-hook 'my-js-mode-hook)
+(add-hook 'js-mode-hook 'my-js-mode-hook)
 
 ;; groovy mode
 ;; (add-to-list 'auto-mode-alist '("\\.groovy\\'" . groovy-mode))
@@ -275,7 +280,7 @@ LIST defaults to all existing live buffers."
   (let* ((buffer (get-buffer-create "*mongo*")))
     (progn
       (pop-to-buffer buffer)
-      (make-comint-in-buffer "mongo" buffer "/opt/mongodb/bin/mongo" nil "etf"))))
+      (make-comint-in-buffer "mongo" buffer "/opt/mongodb/bin/mongo" nil "localhost:57406/etf"))))
 
 (defun mongo-send-region (start end)
   "Send a region to the mongo process."
@@ -324,6 +329,7 @@ LIST defaults to all existing live buffers."
  '(nxml-outline-child-indent 4)
  '(nxml-syntax-highlight-flag t)
  '(pc-selection-mode t nil (pc-select))
+ '(save-place t nil (saveplace))
  '(scroll-step 1)
  '(show-paren-mode t nil (paren))
  '(speedbar-show-unknown-files t)
@@ -334,6 +340,7 @@ LIST defaults to all existing live buffers."
  '(sql-oracle-program "/Users/agleyzer/apps/oracle_instantclient_10_2/sqlplus")
  '(sql-postgres-program "/Library/PostgreSQL8/bin/psql")
  '(sql-user "amg_user/amg_user@165.193.222.4:1521/CND01")
+ '(uniquify-buffer-name-style (quote forward) nil (uniquify))
  '(use-dialog-box nil)
  '(vc-path (quote ("/usr/local/bin"))))
 
@@ -346,4 +353,4 @@ LIST defaults to all existing live buffers."
 
 
 (put 'erase-buffer 'disabled nil)
-
+(put 'suspend-frame 'disabled t)
