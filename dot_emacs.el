@@ -1,5 +1,12 @@
 (push "~/emacs" load-path)
 
+(add-to-list 'load-path "~/emacs/yasnippet")
+(require 'yasnippet)
+(setq yas/root-directory "~/emacs/yasnippet/snippets")
+
+(yas/initialize)
+(yas/load-directory yas/root-directory)
+
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
 (when (equal system-type 'darwin)
@@ -166,7 +173,8 @@
   (add-hook 'before-save-hook
             (lambda ()
               (untabify (point-min) (point-max))))
-  (add-hook 'after-save-hook 'run-unit-tests t t))
+  (add-hook 'after-save-hook 'run-unit-tests t t)
+  (yas/minor-mode))
 
 (add-hook 'js-mode-hook 'my-js-mode-hook)
 
@@ -319,6 +327,7 @@ LIST defaults to all existing live buffers."
  '(column-number-mode t)
  '(delete-selection-mode t nil (delsel))
  '(groovy-indent-level 4)
+ '(hippie-expand-try-functions-list (quote (yas/hippie-try-expand try-complete-file-name-partially try-complete-file-name try-expand-all-abbrevs try-expand-list try-expand-line try-expand-dabbrev try-expand-dabbrev-all-buffers try-expand-dabbrev-from-kill)))
  '(inhibit-startup-screen t)
  '(initial-scratch-message nil)
  '(kill-whole-line t)
@@ -354,3 +363,5 @@ LIST defaults to all existing live buffers."
 
 (put 'erase-buffer 'disabled nil)
 (put 'suspend-frame 'disabled t)
+
+
