@@ -136,13 +136,13 @@
         nil))))
 
 (defun my-js-compile-run-unit-test ()
+  ;; use compile mode to run node with test file or buffer file
   (interactive)
-  (let* ((test-file (my-js-unit-test-file buffer-file-name)))
-    (if test-file
-        (compile (concat "node " test-file))
-      (progn
-        (message "no unit test for %s" buffer-file-name)
-        nil))))
+  (compile (concat "node "
+                   (let ((test-file (my-js-unit-test-file buffer-file-name)))
+                     (if test-file
+                         test-file
+                       buffer-file-name)))))
 
 (defun my-js-unit-test-file (file)
   (interactive "f")
@@ -166,6 +166,9 @@
 
   (define-key js-mode-map [f2] 'my-js-compile-run-unit-test)
 
+  (define-key js-mode-map [M-up] 'beginning-of-defun)
+  (define-key js-mode-map [M-down] 'end-of-defun)
+
   ;; (turn-on-real-auto-save)
   (flymake-mode t)
   (setq unit-test-command 'my-js-unit-test-command)
@@ -174,6 +177,11 @@
             (lambda ()
               (untabify (point-min) (point-max))))
   (add-hook 'after-save-hook 'run-unit-tests t t)
+
+  ;; do not expand if we're in the middle of a word
+  (setq yas/buffer-local-condition
+        '(not (char-equal (char-syntax (char-after (point))) ?w)))
+
   (yas/minor-mode))
 
 (add-hook 'js-mode-hook 'my-js-mode-hook)
@@ -338,6 +346,7 @@ LIST defaults to all existing live buffers."
  '(nxml-outline-child-indent 4)
  '(nxml-syntax-highlight-flag t)
  '(pc-selection-mode t nil (pc-select))
+ '(safe-local-variable-values (quote ((erlang-indent-level . 4))))
  '(save-place t nil (saveplace))
  '(scroll-step 1)
  '(show-paren-mode t nil (paren))
