@@ -1,7 +1,6 @@
 ############################################################-*-Makefile-*-####
 # Makefile for compiling the major mode of Emacs
 ##############################################################################
-# $Id: Makefile 16681 2008-12-01 22:17:46Z nielsen $
 
 ##############################################################################
 # Configuration
@@ -14,9 +13,9 @@ SOURCE_DIR		 = $(ROOT)
 # Variables
 
 # Emacs Lisp
-ELISP_COMMAND		?= ~/Applications/Emacs.app/Contents/MacOS/Emacs
+ELISP_COMMAND		?= /Applications/MacPorts/Emacs.app/Contents/MacOS/Emacs
 ELISP_OPTIONS		+= -batch -no-site-file
-ELISP_OPTIONS           += -L $(ROOT) 
+ELISP_OPTIONS           += -L $(ROOT)
 ELISP_OPTIONS		+= -f batch-byte-compile
 
 
@@ -62,4 +61,4 @@ clean:
 ##############################################################################
 
 autoloads: $(ELISP_SOURCES)
-	~/Applications/Emacs.app/Contents/MacOS/Emacs -batch -q --no-site-file --eval "(setq make-backup-files nil)" --eval "(setq generated-autoload-file (expand-file-name \"autoloads.el\"))" -f batch-update-autoloads `pwd`
+	emacs -batch -q --no-site-file --eval "(setq make-backup-files nil)" --eval "(setq generated-autoload-file (expand-file-name \"autoloads.el\"))" -f batch-update-autoloads `pwd`

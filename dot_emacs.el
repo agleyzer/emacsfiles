@@ -3,8 +3,6 @@
 (add-to-list 'load-path "~/emacs/yasnippet")
 (require 'yasnippet)
 (setq yas/root-directory "~/emacs/yasnippet/snippets")
-
-(yas/initialize)
 (yas/load-directory yas/root-directory)
 
 (add-hook 'before-save-hook 'delete-trailing-whitespace)
@@ -18,7 +16,9 @@
                          "/opt/local/bin" ":"
                          (getenv "PATH")))
 
-  (setenv "DYLD_FALLBACK_LIBRARY_PATH" "/usr/lib:/opt/local/lib:/usr/X11R6/lib")
+  (setenv "DYLD_FALLBACK_LIBRARY_PATH" "/usr/lib:/opt/local/lib:/usr/X11R6/lib:/Users/agleyzer/apps/oracle/product/10.2.0/client_1/lib")
+
+  (setenv "ORACLE_HOME" "/Users/agleyzer/apps/oracle/product/10.2.0/client_1")
 
   (push "/opt/local/bin" exec-path)
   (push "/usr/local/bin" exec-path)
@@ -86,9 +86,13 @@
 ;; start server
 (server-start)
 
-;; ;; scala mode
-;; (add-to-list 'load-path (expand-file-name "~/emacs/scala"))
-;; (require 'scala-mode-auto)
+;; scala mode
+(add-to-list 'load-path (expand-file-name "~/emacs/scala"))
+(require 'scala-mode-auto)
+(add-hook 'scala-mode-hook
+          '(lambda ()
+             (yas/minor-mode-on)))
+
 ;; ;; scala build tool - buggy
 
 ;; (load "sbt")
@@ -96,10 +100,9 @@
 ;;  (setq indent-tabs-mode nil))
 ;; (add-hook 'scala-mode-hook 'me-turn-off-indent-tabs-mode)
 
-;; ;; ensime
-;; (add-to-list 'load-path (expand-file-name "~/emacs/ensime/src/main/elisp/"))
+;; ensime
+;; (add-to-list 'load-path (expand-file-name "~/emacs/ensime/elisp/"))
 ;; (require 'ensime)
-;; (require 'ensime-test)
 ;; (add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
 
 
@@ -240,6 +243,8 @@ LIST defaults to all existing live buffers."
   (delete-other-windows))
 
 
+(setq org-mobile-directory (expand-file-name "~/Dropbox/orgfiles"))
+
 (global-set-key (quote [f5]) (quote nuke-all-buffers))
 
 
@@ -296,7 +301,7 @@ LIST defaults to all existing live buffers."
   (let* ((buffer (get-buffer-create "*mongo*")))
     (progn
       (pop-to-buffer buffer)
-      (make-comint-in-buffer "mongo" buffer "/opt/mongodb/bin/mongo" nil "localhost:57406/etf"))))
+      (make-comint-in-buffer "mongo" buffer "/opt/local/bin/mongo" nil "localhost:57406/etf"))))
 
 (defun mongo-send-region (start end)
   "Send a region to the mongo process."
@@ -345,6 +350,8 @@ LIST defaults to all existing live buffers."
  '(nxml-child-indent 4)
  '(nxml-outline-child-indent 4)
  '(nxml-syntax-highlight-flag t)
+ '(org-agenda-files (quote ("plans.org")))
+ '(org-directory "~/orgfiles")
  '(pc-selection-mode t nil (pc-select))
  '(safe-local-variable-values (quote ((erlang-indent-level . 4))))
  '(save-place t nil (saveplace))
