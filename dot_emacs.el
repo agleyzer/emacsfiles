@@ -129,6 +129,19 @@
 (define-key global-map [f3] 'run-unit-tests)
 (define-key global-map [f4] 'open-unit-test-file)
 
+
+;; toggle all lines that are indented deeper than the current one
+(defun my-toggle-selective-display ()
+  (interactive)
+
+  (save-excursion
+    (beginning-of-line)
+    (skip-chars-forward "[:blank:]")
+    (set-selective-display (if selective-display nil (+ (current-column) 1)))))
+
+(global-set-key [f8] 'my-toggle-selective-display)
+
+
 (defun my-js-unit-test-command ()
   (interactive)
   (let* ((test-file (my-js-unit-test-file buffer-file-name)))
@@ -202,6 +215,7 @@
        (concat
         (cond
          ((string= "scala" (file-name-extension (buffer-file-name))) "fsc")
+         ((string= "pl" (file-name-extension (buffer-file-name))) "perl")
          ((string= "py" (file-name-extension (buffer-file-name))) "python")
          ((string= "groovy" (file-name-extension (buffer-file-name))) "groovy")
          ((string= "js" (file-name-extension (buffer-file-name))) "node")
@@ -242,11 +256,51 @@ LIST defaults to all existing live buffers."
           (buffer-list))
   (delete-other-windows))
 
+;; org-mode
 
 (setq org-mobile-directory (expand-file-name "~/Dropbox/orgfiles"))
 
-(global-set-key (quote [f5]) (quote nuke-all-buffers))
+(add-to-list 'load-path (expand-file-name "~/emacs/org/lisp"))
+(require 'org-install)
 
+(add-to-list 'load-path (expand-file-name "~/emacs/org/contrib/lisp"))
+(require 'org-export-generic)
+
+(org-set-generic-type
+ "confluence"
+ '(
+   :file-suffix  ".txt"
+   :key-binding  ?c
+
+   :author-export                 nil
+   :toc-export                    nil
+   :todo-keywords-export          t
+
+   :title-format                  "h1. %s\n"
+
+   :body-header-section-numbers   4
+   :body-section-header-prefix    ("h2. " "h3. " "h4. " "h5. ")
+   :body-section-header-format    "%s"
+   :body-section-header-suffix    ("\n" "\n" "\n" "\n")
+
+   :body-list-format              "* %s\n"
+   :body-number-list-format       "# %s\n"
+
+   :body-line-export-preformated  t
+   :body-line-fixed-prefix        "{noformat}\n"
+   :body-line-fixed-suffix        "{noformat}\n"
+   :body-line-fixed-format        "%s\n"
+
+   :body-text-prefix              "\n"
+   :body-text-suffix              "\n"
+
+   :body-line-format              "%s\n"
+   :body-line-wrap                750
+   ))
+
+
+
+(global-set-key (quote [f5]) (quote nuke-all-buffers))
 
 (add-to-list 'load-path (expand-file-name "~/emacs/color-theme/"))
 (require 'color-theme)
@@ -326,8 +380,8 @@ LIST defaults to all existing live buffers."
   (mongo-send-region (point-min) (point-max)))
 
 
-(global-set-key (quote [f7]) (quote mongo-send-buffer))
-(global-set-key (quote [f8]) (quote mongo-send-region))
+;; (global-set-key (quote [f7]) (quote mongo-send-buffer))
+;; (global-set-key (quote [f8]) (quote mongo-send-region))
 
 (custom-set-variables
   ;; custom-set-variables was added by Custom.
@@ -339,6 +393,7 @@ LIST defaults to all existing live buffers."
  '(case-fold-search t)
  '(column-number-mode t)
  '(delete-selection-mode t nil (delsel))
+ '(flymake-gui-warnings-enabled nil)
  '(groovy-indent-level 4)
  '(hippie-expand-try-functions-list (quote (yas/hippie-try-expand try-complete-file-name-partially try-complete-file-name try-expand-all-abbrevs try-expand-list try-expand-line try-expand-dabbrev try-expand-dabbrev-all-buffers try-expand-dabbrev-from-kill)))
  '(inhibit-startup-screen t)
@@ -365,6 +420,7 @@ LIST defaults to all existing live buffers."
  '(sql-oracle-program "/Users/agleyzer/apps/oracle_instantclient_10_2/sqlplus")
  '(sql-postgres-program "/Library/PostgreSQL8/bin/psql")
  '(sql-user "amg_user/amg_user@165.193.222.4:1521/CND01")
+ '(truncate-lines t)
  '(uniquify-buffer-name-style (quote forward) nil (uniquify))
  '(use-dialog-box nil)
  '(vc-path (quote ("/usr/local/bin"))))
