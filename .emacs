@@ -12,6 +12,7 @@
                          (expand-file-name "~/apps/node/bin") ":"
                          (expand-file-name "~/apps/scala/bin") ":"
                          (expand-file-name "~/apps/groovy/bin") ":"
+                         (expand-file-name "~/apps/jruby/bin") ":"
                          "/usr/local/bin" ":"
                          "/opt/local/bin" ":"
                          (getenv "PATH")))
@@ -26,6 +27,7 @@
   (push (expand-file-name "~/apps/node/bin") exec-path)
   (push (expand-file-name "~/apps/scala/bin") exec-path)
   (push (expand-file-name "~/apps/groovy/bin") exec-path)
+  (push (expand-file-name "~/apps/jruby/bin") exec-path)
 
   (setenv "MANPATH" (concat "/usr/local/man" ":"
                             "/opt/local/man" ":"
@@ -174,8 +176,10 @@
 (defun my-js-mode-hook ()
   ;; compilation regexp for jslint & node.js
   (setq compilation-error-regexp-alist
-        '(("^[ \t]*\\([A-Za-z.0-9_: \\-]+\\)(\\([0-9]+\\)[,]\\( *[0-9]+\\)) JSLINT: \\(.+\\)$" 1 2 3)
-          ("^[     ]*.+(\\(.+\\):\\([0-9]+\\):\\([0-9]+\\))$" 1 2 3)))
+        '(("^[ \t]*at \\([a-zA-Z0-9\\/\\.\\-]+\\):\\([0-9]+\\):\\([0-9]+\\)$" 1 2 3)
+	  ("^[ \t]*at .+ (\\([a-zA-Z0-9\\/\\.\\-]+\\):\\([0-9]+\\):\\([0-9]+\\))$" 1 2 3)
+	  ))
+	  ;; ("^[ \t]*\\([A-Za-z.0-9_: \\-]+\\)(\\([0-9]+\\)[,]\\( *[0-9]+\\)) JSLINT: \\(.+\\)$" 1 2 3)
 
   ;; espresso mode overrides standard M-., I want it back.
   (define-key js-mode-map [(meta ?.)] #'find-tag)
@@ -191,7 +195,7 @@
   (setq unit-test-file-fn 'my-js-unit-test-file)
   (add-hook 'before-save-hook
             (lambda ()
-              (untabify (point-min) (point-max))))
+              (untabify (point-min) (point-max))) t t)
   (add-hook 'after-save-hook 'run-unit-tests t t)
 
   ;; do not expand if we're in the middle of a word
@@ -398,6 +402,7 @@ LIST defaults to all existing live buffers."
  '(hippie-expand-try-functions-list (quote (yas/hippie-try-expand try-complete-file-name-partially try-complete-file-name try-expand-all-abbrevs try-expand-list try-expand-line try-expand-dabbrev try-expand-dabbrev-all-buffers try-expand-dabbrev-from-kill)))
  '(inhibit-startup-screen t)
  '(initial-scratch-message nil)
+ '(js-indent-level 4)
  '(kill-whole-line t)
  '(mouse-wheel-mode t nil (mwheel))
  '(mouse-yank-at-point t)
@@ -423,6 +428,7 @@ LIST defaults to all existing live buffers."
  '(truncate-lines t)
  '(uniquify-buffer-name-style (quote forward) nil (uniquify))
  '(use-dialog-box nil)
+ '(vc-follow-symlinks nil)
  '(vc-path (quote ("/usr/local/bin"))))
 
 (custom-set-faces

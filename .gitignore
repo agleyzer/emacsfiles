@@ -1,2 +1,4 @@
 *.elc
 .svn
+org
+org-*
