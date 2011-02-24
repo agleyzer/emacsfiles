@@ -33,7 +33,8 @@
                             "/opt/local/man" ":"
                             (getenv "MANPATH")))
 
-  (set-default-font "-apple-consolas-medium-r-normal--22-160-*-*-*-*-*-*"))
+  ;; (set-default-font "-apple-consolas-medium-r-normal--22-160-*-*-*-*-*-*")
+)
 
 ;; No stupid questions
 (defalias 'yes-or-no-p 'y-or-n-p)
@@ -89,11 +90,37 @@
 (server-start)
 
 ;; scala mode
-(add-to-list 'load-path (expand-file-name "~/emacs/scala"))
+(add-to-list 'load-path (expand-file-name "~/emacs/ensime/dist/elisp"))
+(add-to-list 'load-path (expand-file-name "~/emacs/scamacs/src/elisp/scala"))
+;; (add-to-list 'load-path (expand-file-name "~/emacs/scamacs/src/elisp/sbt"))
+;; (add-to-list 'load-path (expand-file-name "~/emacs/scamacs/src/elisp/ecb"))
+
 (require 'scala-mode-auto)
+(require 'ensime)
+;; (require 'sbt)
+
 (add-hook 'scala-mode-hook
           '(lambda ()
-             (yas/minor-mode-on)))
+	     (setq indent-tabs-mode nil)
+
+	     ;; revert stupid scala mode mapping
+	     (define-key scala-mode-map [(control tab)] 'other-window)
+	     (define-key scala-mode-map [f2] 'ensime-sbt-switch)
+	     (define-key scala-mode-map [f3]
+	       (lambda ()
+		 (interactive)
+		 (progn (ensime-sbt-switch)
+			(ensime-sbt-action "run"))))
+
+	     (define-key scala-mode-map [f4]
+	       (lambda ()
+		 (interactive)
+		 (progn (ensime-sbt-switch)
+			(ensime-sbt-action "test-quick"))))
+
+	     (ensime-scala-mode-hook)
+             ;; (yas/minor-mode-on)
+	     ))
 
 ;; ;; scala build tool - buggy
 
@@ -112,7 +139,6 @@
 ;; (autoload 'js2-mode "js2" nil t)
 ;;(add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
 ;;(add-to-list 'auto-mode-alist '("\\.json$" . js2-mode))
-
 
 (require 'markdown-mode)
 
@@ -173,14 +199,11 @@
   (interactive "f")
   (integerp (string-match ".+_test.js" file)))
 
-(defun my-js-mode-hook ()
-  ;; compilation regexp for jslint & node.js
-  (setq compilation-error-regexp-alist
-        '(("^[ \t]*at \\([a-zA-Z0-9\\/\\.\\-]+\\):\\([0-9]+\\):\\([0-9]+\\)$" 1 2 3)
-	  ("^[ \t]*at .+ (\\([a-zA-Z0-9\\/\\.\\-]+\\):\\([0-9]+\\):\\([0-9]+\\))$" 1 2 3)
-	  ))
-	  ;; ("^[ \t]*\\([A-Za-z.0-9_: \\-]+\\)(\\([0-9]+\\)[,]\\( *[0-9]+\\)) JSLINT: \\(.+\\)$" 1 2 3)
+;; compilation regexp for jslint & node.js
+(add-to-list 'compilation-error-regexp-alist '("^[ \t]*at \\([a-zA-Z0-9\\/\\.\\-]+\\):\\([0-9]+\\):\\([0-9]+\\)$" 1 2 3))
+(add-to-list 'compilation-error-regexp-alist '("^[ \t]*at .+ (\\([a-zA-Z0-9\\/\\.\\-]+\\):\\([0-9]+\\):\\([0-9]+\\))$" 1 2 3))
 
+(defun my-js-mode-hook ()
   ;; espresso mode overrides standard M-., I want it back.
   (define-key js-mode-map [(meta ?.)] #'find-tag)
 
@@ -207,24 +230,30 @@
 (add-hook 'js-mode-hook 'my-js-mode-hook)
 
 ;; groovy mode
-;; (add-to-list 'auto-mode-alist '("\\.groovy\\'" . groovy-mode))
-;; (autoload 'groovy-mode "groovy" nil t)
+(add-to-list 'auto-mode-alist '("\\.groovy\\'" . groovy-mode))
+(autoload 'groovy-mode "groovy" nil t)
 
-(define-key global-map [f2]
-  (lambda ()
-    (interactive)
-    (progn
-      (save-buffer)
-      (compile
-       (concat
-        (cond
-         ((string= "scala" (file-name-extension (buffer-file-name))) "fsc")
-         ((string= "pl" (file-name-extension (buffer-file-name))) "perl")
-         ((string= "py" (file-name-extension (buffer-file-name))) "python")
-         ((string= "groovy" (file-name-extension (buffer-file-name))) "groovy")
-         ((string= "js" (file-name-extension (buffer-file-name))) "node")
-         (t "echo no compiler for "))
-        " \"" (buffer-file-name) "\"")))))
+(defun my-find-interpreter (full-file-name)
+  (let* ((file (file-name-nondirectory full-file-name))
+	 (extension (file-name-extension file))
+	 (interpreter (cond
+		       ((string= "scala" extension) "fsc")
+		       ((string= "c" extension) "gcc")
+		       ((string= "pl" extension) "perl")
+		       ((string= "py" extension) "python")
+		       ((string= "groovy" extension) "groovy")
+		       ((string= "js" extension) "node"))))
+    (if interpreter (concat interpreter " \"" full-file-name "\""))))
+
+(defun my-compile ()
+  (interactive)
+  (progn
+    (save-buffer)
+    (if (local-variable-p 'compile-command) (recompile)
+      (compile (or (my-find-interpreter (buffer-name))
+		   "make -k")))))
+
+(define-key global-map [f2] 'my-compile)
 
 ;; Kills live buffers, leaves some emacs work buffers
 ;; optained from http://www.chrislott.org/geek/emacs/dotemacs.html
@@ -263,46 +292,10 @@ LIST defaults to all existing live buffers."
 ;; org-mode
 
 (setq org-mobile-directory (expand-file-name "~/Dropbox/orgfiles"))
-
 (add-to-list 'load-path (expand-file-name "~/emacs/org/lisp"))
 (require 'org-install)
-
 (add-to-list 'load-path (expand-file-name "~/emacs/org/contrib/lisp"))
 (require 'org-export-generic)
-
-(org-set-generic-type
- "confluence"
- '(
-   :file-suffix  ".txt"
-   :key-binding  ?c
-
-   :author-export                 nil
-   :toc-export                    nil
-   :todo-keywords-export          t
-
-   :title-format                  "h1. %s\n"
-
-   :body-header-section-numbers   4
-   :body-section-header-prefix    ("h2. " "h3. " "h4. " "h5. ")
-   :body-section-header-format    "%s"
-   :body-section-header-suffix    ("\n" "\n" "\n" "\n")
-
-   :body-list-format              "* %s\n"
-   :body-number-list-format       "# %s\n"
-
-   :body-line-export-preformated  t
-   :body-line-fixed-prefix        "{noformat}\n"
-   :body-line-fixed-suffix        "{noformat}\n"
-   :body-line-fixed-format        "%s\n"
-
-   :body-text-prefix              "\n"
-   :body-text-suffix              "\n"
-
-   :body-line-format              "%s\n"
-   :body-line-wrap                750
-   ))
-
-
 
 (global-set-key (quote [f5]) (quote nuke-all-buffers))
 
@@ -359,7 +352,7 @@ LIST defaults to all existing live buffers."
   (let* ((buffer (get-buffer-create "*mongo*")))
     (progn
       (pop-to-buffer buffer)
-      (make-comint-in-buffer "mongo" buffer "/opt/local/bin/mongo" nil "localhost:57406/etf"))))
+      (make-comint-in-buffer "mongo" buffer "/Users/agleyzer/apps/mongodb/bin/mongo" nil "localhost:57406/etf"))))
 
 (defun mongo-send-region (start end)
   "Send a region to the mongo process."
@@ -396,7 +389,10 @@ LIST defaults to all existing live buffers."
  '(c-basic-offset 4)
  '(case-fold-search t)
  '(column-number-mode t)
+ '(compilation-search-path (quote ("/Users/agleyzer/6/src/com/cnp/bunsen/importer/" nil)))
  '(delete-selection-mode t nil (delsel))
+ '(ecb-layout-window-sizes (quote (("left8" (ecb-directories-buffer-name 0.2129032258064516 . 0.28846153846153844) (ecb-sources-buffer-name 0.2129032258064516 . 0.23076923076923078) (ensime-type-inspector-tree-buffer-name 0.2129032258064516 . 0.28846153846153844) (ecb-history-buffer-name 0.2129032258064516 . 0.17307692307692307)))))
+ '(ecb-options-version "2.40")
  '(flymake-gui-warnings-enabled nil)
  '(groovy-indent-level 4)
  '(hippie-expand-try-functions-list (quote (yas/hippie-try-expand try-complete-file-name-partially try-complete-file-name try-expand-all-abbrevs try-expand-list try-expand-line try-expand-dabbrev try-expand-dabbrev-all-buffers try-expand-dabbrev-from-kill)))
@@ -412,6 +408,10 @@ LIST defaults to all existing live buffers."
  '(nxml-syntax-highlight-flag t)
  '(org-agenda-files (quote ("plans.org")))
  '(org-directory "~/orgfiles")
+ '(org-export-author-info t)
+ '(org-export-creator-info nil)
+ '(org-export-email-info t)
+ '(org-export-time-stamp-file t)
  '(pc-selection-mode t nil (pc-select))
  '(safe-local-variable-values (quote ((erlang-indent-level . 4))))
  '(save-place t nil (saveplace))
@@ -425,7 +425,6 @@ LIST defaults to all existing live buffers."
  '(sql-oracle-program "/Users/agleyzer/apps/oracle_instantclient_10_2/sqlplus")
  '(sql-postgres-program "/Library/PostgreSQL8/bin/psql")
  '(sql-user "amg_user/amg_user@165.193.222.4:1521/CND01")
- '(truncate-lines t)
  '(uniquify-buffer-name-style (quote forward) nil (uniquify))
  '(use-dialog-box nil)
  '(vc-follow-symlinks nil)
@@ -436,7 +435,7 @@ LIST defaults to all existing live buffers."
   ;; If you edit it by hand, you could mess it up, so be careful.
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
- )
+ '(default ((t (:inherit nil :stipple nil :background "Grey15" :foreground "Grey" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 220 :width normal :foundry "apple" :family "Consolas")))))
 
 
 (put 'erase-buffer 'disabled nil)
