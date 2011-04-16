@@ -5,7 +5,11 @@
 (setq yas/root-directory "~/emacs/yasnippet/snippets")
 (yas/load-directory yas/root-directory)
 
-(add-hook 'before-save-hook 'delete-trailing-whitespace)
+;; untabify and delete trailing whitespace
+(add-hook 'before-save-hook
+          (lambda ()
+            (delete-trailing-whitespace)
+            (untabify (point-min) (point-max))) t nil)
 
 (when (equal system-type 'darwin)
   (setenv "PATH" (concat (expand-file-name "~/bin") ":"
@@ -101,26 +105,26 @@
 
 (add-hook 'scala-mode-hook
           '(lambda ()
-	     (setq indent-tabs-mode nil)
+             (setq indent-tabs-mode nil)
 
-	     ;; revert stupid scala mode mapping
-	     (define-key scala-mode-map [(control tab)] 'other-window)
-	     (define-key scala-mode-map [f2] 'ensime-sbt-switch)
-	     (define-key scala-mode-map [f3]
-	       (lambda ()
-		 (interactive)
-		 (progn (ensime-sbt-switch)
-			(ensime-sbt-action "run"))))
+             ;; revert stupid scala mode mapping
+             (define-key scala-mode-map [(control tab)] 'other-window)
+             (define-key scala-mode-map [f2] 'ensime-sbt-switch)
+             (define-key scala-mode-map [f3]
+               (lambda ()
+                 (interactive)
+                 (progn (ensime-sbt-switch)
+                        (ensime-sbt-action "run"))))
 
-	     (define-key scala-mode-map [f4]
-	       (lambda ()
-		 (interactive)
-		 (progn (ensime-sbt-switch)
-			(ensime-sbt-action "test-quick"))))
+             (define-key scala-mode-map [f4]
+               (lambda ()
+                 (interactive)
+                 (progn (ensime-sbt-switch)
+                        (ensime-sbt-action "test-quick"))))
 
-	     (ensime-scala-mode-hook)
+             (ensime-scala-mode-hook)
              ;; (yas/minor-mode-on)
-	     ))
+             ))
 
 ;; ;; scala build tool - buggy
 
@@ -140,7 +144,9 @@
 ;;(add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
 ;;(add-to-list 'auto-mode-alist '("\\.json$" . js2-mode))
 
-(require 'markdown-mode)
+;; (require 'markdown-mode)
+
+;; (load (expand-file-name "~/emacs/nxhtml/autostart.el"))
 
 (setq auto-mode-alist
    (cons '("\\.md" . markdown-mode) auto-mode-alist))
@@ -235,14 +241,14 @@
 
 (defun my-find-interpreter (full-file-name)
   (let* ((file (file-name-nondirectory full-file-name))
-	 (extension (file-name-extension file))
-	 (interpreter (cond
-		       ((string= "scala" extension) "fsc")
-		       ((string= "c" extension) "gcc")
-		       ((string= "pl" extension) "perl")
-		       ((string= "py" extension) "python")
-		       ((string= "groovy" extension) "groovy")
-		       ((string= "js" extension) "node"))))
+         (extension (file-name-extension file))
+         (interpreter (cond
+                       ((string= "scala" extension) "fsc")
+                       ((string= "c" extension) "gcc")
+                       ((string= "pl" extension) "perl")
+                       ((string= "py" extension) "python")
+                       ((string= "groovy" extension) "groovy")
+                       ((string= "js" extension) "node"))))
     (if interpreter (concat interpreter " \"" full-file-name "\""))))
 
 (defun my-compile ()
@@ -251,7 +257,7 @@
     (save-buffer)
     (if (local-variable-p 'compile-command) (recompile)
       (compile (or (my-find-interpreter (buffer-name))
-		   "make -k")))))
+                   "make -k")))))
 
 (define-key global-map [f2] 'my-compile)
 
@@ -377,6 +383,12 @@ LIST defaults to all existing live buffers."
   (mongo-send-region (point-min) (point-max)))
 
 
+(add-to-list 'load-path "~/emacs/textmate.el")
+(require 'textmate)
+(textmate-mode)
+
+
+
 ;; (global-set-key (quote [f7]) (quote mongo-send-buffer))
 ;; (global-set-key (quote [f8]) (quote mongo-send-region))
 
@@ -394,7 +406,7 @@ LIST defaults to all existing live buffers."
  '(ecb-layout-window-sizes (quote (("left8" (ecb-directories-buffer-name 0.2129032258064516 . 0.28846153846153844) (ecb-sources-buffer-name 0.2129032258064516 . 0.23076923076923078) (ensime-type-inspector-tree-buffer-name 0.2129032258064516 . 0.28846153846153844) (ecb-history-buffer-name 0.2129032258064516 . 0.17307692307692307)))))
  '(ecb-options-version "2.40")
  '(flymake-gui-warnings-enabled nil)
- '(groovy-indent-level 4)
+ '(groovy-indent-level 2)
  '(hippie-expand-try-functions-list (quote (yas/hippie-try-expand try-complete-file-name-partially try-complete-file-name try-expand-all-abbrevs try-expand-list try-expand-line try-expand-dabbrev try-expand-dabbrev-all-buffers try-expand-dabbrev-from-kill)))
  '(inhibit-startup-screen t)
  '(initial-scratch-message nil)
@@ -402,16 +414,19 @@ LIST defaults to all existing live buffers."
  '(kill-whole-line t)
  '(mouse-wheel-mode t nil (mwheel))
  '(mouse-yank-at-point t)
+ '(mumamo-chunk-coloring 3)
  '(ns-pop-up-frames nil)
  '(nxml-child-indent 4)
  '(nxml-outline-child-indent 4)
  '(nxml-syntax-highlight-flag t)
  '(org-agenda-files (quote ("plans.org")))
  '(org-directory "~/orgfiles")
- '(org-export-author-info t)
+ '(org-export-author-info nil)
  '(org-export-creator-info nil)
- '(org-export-email-info t)
- '(org-export-time-stamp-file t)
+ '(org-export-email-info nil)
+ '(org-export-htmlize-output-type (quote css))
+ '(org-export-time-stamp-file nil)
+ '(org-export-with-timestamps nil)
  '(pc-selection-mode t nil (pc-select))
  '(safe-local-variable-values (quote ((erlang-indent-level . 4))))
  '(save-place t nil (saveplace))
@@ -435,10 +450,15 @@ LIST defaults to all existing live buffers."
   ;; If you edit it by hand, you could mess it up, so be careful.
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
- '(default ((t (:inherit nil :stipple nil :background "Grey15" :foreground "Grey" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 220 :width normal :foundry "apple" :family "Consolas")))))
+ '(default ((t (:inherit nil :stipple nil :background "Grey15" :foreground "Grey" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 240 :width normal :foundry "apple" :family "Anonymous Pro")))))
 
 
 (put 'erase-buffer 'disabled nil)
 (put 'suspend-frame 'disabled t)
 
 
+;; remove bold from all faces
+(mapc
+ (lambda (face)
+   (set-face-attribute face nil :weight 'normal :underline nil))
+ (face-list))
