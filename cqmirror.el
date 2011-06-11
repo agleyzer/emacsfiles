@@ -9,62 +9,75 @@
 ;; a file in the root of the local copy. The file might look something
 ;; like this:
 
-;; ((nil . ((mymirror-target-dir . "/Volumes/localhost/apps")
-;;         (mymirror-update-on-save . t))))
+;; ((nil . ((cqmirror-target-dir . "/Volumes/localhost/apps")
+;;         (cqmirror-update-on-save . t))))
 
 ;; This means that for all files under this directory, the two
 ;; variables will be set as buffer-local. Once these vars are set,
 ;; mirroring kicks in on every save.
 
-;; The first variable `mymirror-target-dir' establishes the root of
+;; The first variable `cqmirror-target-dir' establishes the root of
 ;; the remote directory tree.
 
-;; If `mymirror-update-on-save' is not set as t, one can still mirror
-;; by hand, calling `mymirror-update-this-file' directly.
+;; If `cqmirror-update-on-save' is not set as t, one can still mirror
+;; by hand, calling `cqmirror-update-this-file' directly.
 
-;; To start using simply add (require 'mymirror) to your .emacs
+;; To start using simply add (require 'cqmirror) to your .emacs
 
-(defvar mymirror-update-on-save nil
+
+(defvar cqmirror-update-on-save nil
   "Automatically update the remote mirror whenever this file is saved.")
-(make-variable-buffer-local 'mymirror-update-on-save)
+(make-variable-buffer-local 'cqmirror-update-on-save)
 
-(defvar mymirror-target-dir nil
+
+(defvar cqmirror-target-dir nil
   "Target directory for mirroring.")
-(make-variable-buffer-local 'mymirror-target-dir)
+(make-variable-buffer-local 'cqmirror-target-dir)
 
-(defun mymirror-relative-name (file)
+
+(defun cqmirror-relative-name (file)
   "Returns file name relative to the project dir."
   (let* ((dlf (dir-locals-find-file file))
          (dir (cond ((consp dlf) (nth 0 dlf))
                     ((stringp dlf) dlf))))
     (file-relative-name file dir)))
 
-(defun mymirror-update-this-file ()
+
+(defun cqmirror-update-this-file ()
   "Copies current buffer's file into a mirrored file."
   (interactive)
-  (if mymirror-target-dir
+  (if cqmirror-target-dir
       (let* ((src (buffer-file-name))
-             (dst (expand-file-name (mymirror-relative-name src)
-                                    mymirror-target-dir)))
-        (copy-file src dst t t)
-        (message "Copied to %s" dst))))
+             (dst (expand-file-name (cqmirror-relative-name src)
+                                    cqmirror-target-dir)))
+        ;; CQ5's WebDAV when mounted on OSX seems to report that any
+        ;; file is present, but still it's nice to check if dst exists
+        (if (or (file-exists-p dst)
+                (y-or-n-p "Destination file doesn't exist. Create?"))
+            (progn
+              (copy-file src dst t t)
+              (message "Copied to %s" dst))))))
 
-(defun mymirror-update-this-file-maybe ()
-  "Update the remote mirror iff local variable `mymirror-this-file' is t."
+
+(defun cqmirror-update-this-file-maybe ()
+  "Update the remote mirror iff local variable `cqmirror-this-file' is t."
   (condition-case error
       ;; double check in case we have turned this off temporarily with
       ;; M-x set-variable
-      (when mymirror-update-on-save
-        (mymirror-update-this-file))
+      (when cqmirror-update-on-save
+        (cqmirror-update-this-file))
     (error t)))
 
-(defun mymirror-check-for-mirror-this-file ()
+
+(defun cqmirror-check-for-mirror-this-file ()
   (condition-case error
-      (when mymirror-update-on-save ;; local-variable
-        (add-hook 'after-save-hook 'mymirror-update-this-file-maybe t t))
+      (when cqmirror-update-on-save ;; local-variable
+        (add-hook 'after-save-hook 'cqmirror-update-this-file-maybe t t))
     (error t)))
 
-(add-hook 'find-file-hook 'mymirror-check-for-mirror-this-file t nil)
 
-(provide 'mymirror)
+(add-hook 'find-file-hook 'cqmirror-check-for-mirror-this-file t nil)
+
+
+(provide 'cqmirror)
 
