@@ -57,6 +57,10 @@
 (global-set-key (quote [C-tab]) (quote other-window))
 (global-set-key (quote [home]) (quote beginning-of-line))
 (global-set-key (quote [end]) (quote end-of-line))
+;; aquamacs version
+(define-key osx-key-mode-map [home] 'beginning-of-line)
+(define-key osx-key-mode-map [end] 'end-of-line)
+
 (global-set-key (quote [C-return]) (quote hippie-expand))
 (global-set-key (quote [kp-delete]) (quote delete-char))
 
@@ -103,6 +107,8 @@
 (require 'ensime)
 ;; (require 'sbt)
 
+(require 'cqmirror)
+
 (add-hook 'scala-mode-hook
           '(lambda ()
              (setq indent-tabs-mode nil)
@@ -119,8 +125,7 @@
              (define-key scala-mode-map [f4]
                (lambda ()
                  (interactive)
-                 (progn (ensime-sbt-switch)
-                        (ensime-sbt-action "test-quick"))))
+                 (ensime-sbt-switch)))
 
              (ensime-scala-mode-hook)
              ;; (yas/minor-mode-on)
@@ -144,9 +149,9 @@
 ;;(add-to-list 'auto-mode-alist '("\\.js$" . js2-mode))
 ;;(add-to-list 'auto-mode-alist '("\\.json$" . js2-mode))
 
-;; (require 'markdown-mode)
+(require 'markdown-mode)
 
-;; (load (expand-file-name "~/emacs/nxhtml/autostart.el"))
+(load (expand-file-name "~/emacs/nxhtml/autostart.el"))
 
 (setq auto-mode-alist
    (cons '("\\.md" . markdown-mode) auto-mode-alist))
@@ -163,6 +168,22 @@
 (define-key global-map [f3] 'run-unit-tests)
 (define-key global-map [f4] 'open-unit-test-file)
 
+
+(define-key comint-mode-map [f4]
+  (lambda ()
+    (interactive)
+    ;; (switch-to-buffer-other-window (other-buffer))))
+    (delete-window)))
+    ;;(other-window 1)
+    ;;(delete-other-windows)))
+
+
+(define-key comint-mode-map [f8]
+  (lambda ()
+    (interactive)
+    (let ((inhibit-read-only t))
+      (erase-buffer)
+      (comint-send-input t))))
 
 ;; toggle all lines that are indented deeper than the current one
 (defun my-toggle-selective-display ()
@@ -307,6 +328,7 @@ LIST defaults to all existing live buffers."
 
 (add-to-list 'load-path (expand-file-name "~/emacs/color-theme/"))
 (require 'color-theme)
+;; (require 'color-theme-solarized)
 (eval-after-load "color-theme"
   '(progn
      (color-theme-initialize)
@@ -327,7 +349,7 @@ LIST defaults to all existing live buffers."
              (local-file (file-relative-name
                           temp-file
                           (file-name-directory buffer-file-name))))
-        (list "/opt/local/bin/pyflakes" (list local-file)))))
+        (list "/opt/local/bin/pyflakes-2.6" (list local-file)))))
   (add-to-list 'flymake-allowed-file-name-masks
                '("\\.py\\'" flymake-pyflakes-init)))
 
@@ -383,9 +405,9 @@ LIST defaults to all existing live buffers."
   (mongo-send-region (point-min) (point-max)))
 
 
-(add-to-list 'load-path "~/emacs/textmate.el")
-(require 'textmate)
-(textmate-mode)
+;; (add-to-list 'load-path "~/emacs/textmate.el")
+;; (require 'textmate)
+;; (textmate-mode)
 
 
 
@@ -397,6 +419,7 @@ LIST defaults to all existing live buffers."
   ;; If you edit it by hand, you could mess it up, so be careful.
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
+ '(after-save-hook (quote (cqmirror-update-this-file-maybe)))
  '(backup-directory-alist (quote (("." . "~/.backups"))))
  '(c-basic-offset 4)
  '(case-fold-search t)
@@ -406,11 +429,11 @@ LIST defaults to all existing live buffers."
  '(ecb-layout-window-sizes (quote (("left8" (ecb-directories-buffer-name 0.2129032258064516 . 0.28846153846153844) (ecb-sources-buffer-name 0.2129032258064516 . 0.23076923076923078) (ensime-type-inspector-tree-buffer-name 0.2129032258064516 . 0.28846153846153844) (ecb-history-buffer-name 0.2129032258064516 . 0.17307692307692307)))))
  '(ecb-options-version "2.40")
  '(flymake-gui-warnings-enabled nil)
- '(groovy-indent-level 2)
+ '(groovy-indent-level 4)
  '(hippie-expand-try-functions-list (quote (yas/hippie-try-expand try-complete-file-name-partially try-complete-file-name try-expand-all-abbrevs try-expand-list try-expand-line try-expand-dabbrev try-expand-dabbrev-all-buffers try-expand-dabbrev-from-kill)))
  '(inhibit-startup-screen t)
  '(initial-scratch-message nil)
- '(js-indent-level 4)
+ '(js-indent-level 2)
  '(kill-whole-line t)
  '(mouse-wheel-mode t nil (mwheel))
  '(mouse-yank-at-point t)
@@ -428,7 +451,7 @@ LIST defaults to all existing live buffers."
  '(org-export-time-stamp-file nil)
  '(org-export-with-timestamps nil)
  '(pc-selection-mode t nil (pc-select))
- '(safe-local-variable-values (quote ((erlang-indent-level . 4))))
+ '(safe-local-variable-values (quote ((cqmirror-update-on-save . t) (cqmirror-target-dir . "/Volumes/localhost"))))
  '(save-place t nil (saveplace))
  '(scroll-step 1)
  '(show-paren-mode t nil (paren))
@@ -450,15 +473,18 @@ LIST defaults to all existing live buffers."
   ;; If you edit it by hand, you could mess it up, so be careful.
   ;; Your init file should contain only one such instance.
   ;; If there is more than one, they won't work right.
- '(default ((t (:inherit nil :stipple nil :background "Grey15" :foreground "Grey" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 240 :width normal :foundry "apple" :family "Anonymous Pro")))))
+ '(default ((t (:inherit nil :stipple nil :background "Grey15" :foreground "Grey" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 240 :width normal :foundry "apple" :family "Inconsolata"))))
+ '(bold ((t (:underline nil :weight thin)))))
 
 
 (put 'erase-buffer 'disabled nil)
 (put 'suspend-frame 'disabled t)
 
 
-;; remove bold from all faces
-(mapc
- (lambda (face)
-   (set-face-attribute face nil :weight 'normal :underline nil))
- (face-list))
+;; ;; remove bold from all faces
+;; (mapc
+;;  (lambda (face)
+;;    (set-face-attribute face nil :weight 'normal :underline nil))
+;;  (face-list))
+;;
+;; (set-face-bold-p 'bold nil)
